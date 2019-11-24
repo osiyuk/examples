@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+</head>
+<body>
+<div class="container">
+
+<pre>Задача: реализовать шаблон для тестирования типографики</pre>
+
+<h1>Купите нашу пробную корзинку</h1>
+
+<h2>Пробная корзина (3&nbsp;000&nbsp;p.)</h2>
+
+<p>
+Фермерские продукты можно заказать в&nbsp;формате пробной корзины.
+Мы&nbsp;отобрали самые популярные из&nbsp;них, чтобы вы&nbsp;смогли все
+попробовать сами. Это удобно для тех, кто делает заказ впервые
+и&nbsp;не&nbsp;знает, что выбрать или тем, кто хотел&nbsp;бы порадовать
+родных вкусным, свежим и&nbsp;полезным подарком.</p>
+
+<h3>Что входит?</h3>
+
+<p>
+Молоко коровье 1&nbsp;л.<br>
+Творог&nbsp;5% 0,5&nbsp;кг.<br>
+Настоящая деревенская сметанка 40-45% жир.&nbsp;0,25&nbsp;л.<br>
+Кефир&nbsp;0,5&nbsp;л.<br>
+Масло сливочное 0,2&nbsp;кг.</p>
+
+<ul>
+Варенье на&nbsp;выбор 0,3&nbsp;л. (указать в&nbsp;комментарии)
+
+<li>из&nbsp;груши с&nbsp;грецким орехом и&nbsp;специями</li>
+<li>из&nbsp;вишни (с&nbsp;косточкой) с&nbsp;корицей</li>
+<li>абрикосовое варенье с&nbsp;миндалем и&nbsp;розмарином</li></ul>
+
+<p>
+Мед&nbsp;0,3&nbsp;л.<br>
+Домашняя курочка (до&nbsp;2,4&nbsp;кг.)<br>
+Картофель 1&nbsp;кг.<br>
+Яйца куриные 10&nbsp;шт.</p>
+
+<p>
+ВАЖНО: нашу пробную корзину можно получить только делая заказ впервые
+и&nbsp;только один раз. На&nbsp;нее не&nbsp;распространяются никакие
+дополнительные скидки и&nbsp;акции.</p>
+
+<h2>Пробная корзина&emsp;3&nbsp;000&nbsp;&#8381;</h2>
+
+<h3>
+Это заголовок третьего уровня, а&nbsp;вы&nbsp;читаете «оттипографированный» текст
+</h3>
+</div>
+
+<div class="container">
+
+<h1>Доставка продуктов на дом</h1>
+
+<p>Мы доставляем продукты по пятницам.</p>
+
+<p>Здесь появится отредактированный текст про доставку и&nbsp;маршруты</p>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond&subset=cyrillic');
+
+body {
+font-family: 'EB Garamond', serif;
+letter-spacing: 0.4px;
+line-height: 1.4;
+font-size: 18px;
+color: #333;
+}
+
+h3, h2, h1 {
+margin: 28px 0 18px;
+font-weight: normal;
+letter-spacing: 1px;
+font-size: 22px;
+}
+
+h2 {
+font-family: Arial, sans-serif;
+letter-spacing: 1px;
+font-size: 20px;
+color: #555;
+}
+
+h1 {
+font-size: 24px;
+}
+
+ul {
+padding: 0;
+list-style: none;
+}
+ul li:before {
+content: '— ';
+}
+ul li:after {
+content: ',';
+}
+ul li:last-child:after {
+content: '.';
+}
+
+.container {
+margin: 0 auto;
+width: 450px;
+}
+
