@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<pre>Задача: разработать поиск на клиенте из json документа, с применением алгоритма Левенштейна (см. 225)</pre>
+
+<div class="search">
+    <input type="text" id="search" placeholder="Продукты">
+    <pre id=test></pre>
+    <div id="suggest"></div>
+</div>
+
+<table class="list">
+<thead>
+<tr>
+    <th class="list-product">Продукт</th>
+    <th class="list-amount">Количество</th>
+    <th class="list-weight">Вес</th>
+    <th class="list-sum">Итого</th>
+</tr>
+</thead>
+<tbody id="product_list">
+</tbody>
+<tfoot>
+<tr>
+    <th colspan=3></th>
+    <th id="total_price">x</th>
+</tr>
+</tfoot>
+</table>
+
+<style>
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond&subset=cyrillic');
+
+body {
+    font-family: 'EB Garamond', serif;
+    letter-spacing: 0.4px;
+    line-height: 1.4;
+    font-size: 18px;
+    color: #333;
+}
+
+body pre {
+    letter-spacing: 0;
+    line-height: 1;
+    font-size: initial;
+    color: black;
+}
+
+.search {}
+
+#search {
+    font-family: 'EB Garamond', serif;
+    font-size: 20px;
+    line-height: 30px;
+}
+
+.suggest-active {
+    background-color: BlanchedAlmond;
+}
+
+.list {}
+
+.list th {}
+.list td {
+    line-height: 35px;
+    padding-right: 20px;
+}
+
+#product_list input[type=number] {
+    height: 20px;
+    width: 40px;
+    padding: 0 3px;
+}
+
+#product_list .product-remove {
+    color: gray;
+    cursor: pointer;
+    padding: 0;
+}
+#product_list .product-remove:hover {
+    color: salmon;
+}
+
+.elem {
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 50px;
+}
+.elem > div {
+    display: inline-block;
+}
+.elem-name {
+    min-width: 300px;
+}
+.elem-box {
+    min-width: 60px;
+    text-align: center;
+}
+.elem-input {
+    min-width: 70px;
+}
+.elem-quantity {
+    width: 40px;
+    text-align: center;
+}
+</style>
+
+<pre id="json">
+{
+    "products": [
+    {
+        "name": "Качотта с помидорами (большая)",
+        "sku" : 9374612,
+        "packing_type": "quantity",
+        "price": 600
+    },{
+        "name": "Качотта с помидорами (малая)",
+        "sku" : 9374567,
+        "packing_type": "quantity",
+        "price": 200
+    },{
+        "name": "Сыр твердый классический из коровьего молока",
+        "sku" : 9340733,
+        "packing_type": "weight",
+        "weight_unit": "кг",
+        "minimum_weight": 0.2,
+        "price": 260
+    },{
+        "name": "Моцарелла",
+        "sku" : 9125825,
+        "packing_type": "quantity",
+        "price": 198
+    },{
+        "name": "Творог 5%",
+        "sku" : 2258222,
+        "packing_type": "packaging",
+        "weight_unit": "кг",
+        "packaging": [0.3, 0.5, 1, 1.5, 2, 2.5, 3],
+        "price": [200, 280, 560, 840, 1120, 1400, 1680]
+    },{
+        "name": "Адыгейский классический",
+        "sku" : 2232809,
+        "packing_type": "weight",
+        "weight_unit": "кг",
+        "minimum_weight": 0.1,
+        "price": 86
+    },{
+        "name": "Молоко коровье 3,8-4,1%",
+        "sku" : 1171857,
+        "packing_type": "weight",
+        "weight_unit": "л",
+        "minimum_weight": 1,
+        "price": 124
+    },{
+        "name": "Молоко коровье топленое 5,9%",
+        "sku" : 1625402,
+        "packing_type": "weight",
+        "weight_unit": "л",
+        "minimum_weight": 1,
+        "price": 158
+    }]
+}
+</pre>
+
+<script>
+var products = JSON.parse(json.textContent).products;
+var index = {};
+
+function add_index(word, doc) {
+    if (word in index) {
+        index[word].push(doc);
+    } else {
+        index[word] = [doc];
+    }
+}
+
+function add_index_hop(word, doc) {
+    if (!index.hasOwnProperty(word)) {
+        index[word] = [];
+    }
+    index[word].push(doc);
+}
+
+// indexing json doc
+for (var i = 0; i < products.length; i++) {
+    var words = products[i].name.toLowerCase().split(' ');
+    for (var j = 0; j < words.length; j++) { add_index(words[j], i); }
+}
+
+function search_index_naive(word) {
+    if (word in index) return index[word]; // very naive search :)
+    return [];
+}
+
+function search_index_substr(word) {
+    var words = Object.keys(index);
+    for (var i = 0; i < words.length; i++) {
+        if (words[i].indexOf(word) !== -1)
+        return index[words[i]]; // little improved search
+    }
+}
+
+function concat_unique(incoming, outcoming) {
+    for (var i = 0; i < incoming.length; i++) {
+        if (outcoming.indexOf(incoming[i]) == -1)
+            outcoming.push(incoming[i]);
+    }
+}
+
+function search_index_substr_concat(word) {
+    var words = Object.keys(index);
+    var docs = [];
+    for (var i = 0; i < words.length; i++) {
+        if (words[i].indexOf(word) !== -1) {
+            concat_unique(index[words[i]], docs);
+        }
+    }
+    return docs; // concat docs that have word as substring in any keyword
+}
+
+
+function levenshtein(a, b) { // using dynamic programming approach
+    var i, j, n, m, d;
+    
+    n = a.length;
+    m = b.length;
+    
+    if (Math.min(n, m) == 0) return Math.max(n, m);
+    
+    // should I use n++; m++; here and simplify indexing?
+    
+    d = []; // pay attention cus we using one dimensional array
+    for (i = 0; i < n + 1; i++) {
+        d[i] = i;
+    }
+    
+    for (j = 1; j < m + 1; j++) {
+        d[j * (n + 1)] = j; // and like pointer arithmetics
+    }
+    
+    var code = function (str, index) {
+        return str.codePointAt(index);
+    }
+    
+    for (i = 1; i < n + 1; i++) // here comes nested loop
+    for (j = 1; j < m + 1; j++) {
+        var cost = +!(code(a, i - 1) == code(b, j - 1)); // some magic
+        d[j * (n + 1) + i] = Math.min(
+            d[j * (n + 1) + (i - 1)] + 1, // deletion
+            d[(j - 1) * (n + 1) + i] + 1, // insertion
+            d[(j - 1) * (n + 1) + (i - 1)] + cost // substitution
+        );
+    }
+    // return d; // for debug and insights :D
+    
+    return d[(m + 1) * (n + 1) - 1]; // затащено
+}
+
+function levenshtein_through_index(word) {
+    var words = {};
+    for (keyword in index) {
+        words[keyword] = levenshtein(word, keyword);
+    }
+    return words;
+}
+
+function search_index_lev(word) {
+    var docs = [];
+    var wordlen = word.length;
+    for (keyword in index) {
+        var keylen = keyword.length;
+        var acceptable = Math.floor(Math.max(wordlen, keylen) / 2);
+        if (levenshtein(word, keyword) <= acceptable) {
+            concat_unique(index[keyword], docs);
+        }
+        if (wordlen <= 3 && keyword.startsWith(word)) {
+            concat_unique(index[keyword], docs);
+        }
+    }
+    return docs;
+}
+
+function search_index(word) {
+    var docs = search_index_naive(word);
+    if (docs.length) return docs;
+    docs = search_index_substr_concat(word);
+    if (docs.length) return docs;
+    docs = search_index_lev(word);
+    return docs; // combined algorithm
+}
+
+
+// UI applied sciences
+
+window.stash = {}; // stash
+
+// I feel like I need to explain this thing:
+// var for variables
+// window for UI business
+// stash for UI variables
+
+function product_weight(doc) {
+    var product = products[doc];
+    
+    if (product.packing_type == 'packaging') {
+        return product.packaging[0];
+    }
+    if (product.packing_type == 'weight') {
+        return product.minimum_weight;
+    }
+}
+
+function product_price(doc) {
+    var product = products[doc];
+    var price = product.price;
+    
+    if (product.packing_type == 'packaging') {
+        price = price[0];
+    }
+    return price;
+}
+
+function product_unit(doc) {
+    return products[doc].weight_unit;
+}
+
+function _price(price) {
+    return price + ' р.';
+}
+
+function _weight(weight, unit) {
+    weight = weight.toString().replace('.', ',');
+    return weight + ' ' + unit;
+}
+
+function calculator_row() {
+    var doc = this.dataset.doc;
+    var amount = this.children[1].firstChild.value;
+    var sum = product_price(doc) * amount;
+    var weight = product_weight(doc);
+    
+    if (weight) {
+        weight = (weight * amount).toFixed(2);
+        weight = _weight(weight, product_unit(doc));
+        this.children[2].textContent = weight;
+    }
+    this.children[3].textContent = _price(sum);
+    setTimeout(calculator_sum, 0);
+}
+
+function calculator_sum() {
+    var i, list, count, price, sum;
+    
+    list = product_list.children;
+    count = product_list.childElementCount;
+    
+    for (i = 0, sum = 0; i < count; i++) {
+        price = list[i].children[3].textContent;
+        sum += parseInt(price);
+    }
+    total_price.textContent = _price(sum);
+}
+
+function suggest_node(doc) {
+    var product, price, weight, div, el;
+    
+    product = products[doc];
+    price = product.price;
+    
+    if (product.packing_type == 'packaging') {
+        price = 'от ' + price[0];
+        weight = product.packaging[0];
+    }
+    if (product.packing_type == 'weight') {
+        weight = product.minimum_weight;
+    }
+    price += ' р.';
+    if (weight) {
+        weight = weight.toString().replace('.', ',');
+        price += ' / ' + weight + ' ' + product.weight_unit;
+    }
+    
+    div = document.createElement('div');
+    div.dataset.doc = doc;
+    
+    el = document.createElement('span');
+    el.textContent = product.name;
+    div.appendChild(el);
+    
+    el = document.createElement('br');
+    div.appendChild(el);
+    
+    el = document.createElement('span');
+    el.textContent = price;
+    div.appendChild(el);
+    return div;
+}
+
+function product_node(doc) {
+    var product, calculator, tr, td, input;
+    
+    tr = document.createElement('tr');
+    tr.dataset.doc = doc;
+    
+    product = products[doc];
+    calculator = calculator_row.bind(tr);
+    
+    td = document.createElement('td');
+    td.textContent = product.name;
+    tr.appendChild(td);
+    
+    input = document.createElement('input');
+    input.type = 'number';
+    input.min = 1;
+    input.value = 1;
+    input.oninput = calculator;
+    
+    td = td.cloneNode(false);
+    td.appendChild(input);
+    tr.appendChild(td);
+    
+    td = td.cloneNode(false);
+    tr.appendChild(td);
+    
+    td = td.cloneNode(false);
+    tr.appendChild(td);
+    calculator();
+    
+    td = td.cloneNode(false);
+    td.className = 'product-remove';
+    td.textContent = 'удалить';
+    td.onclick = function() {
+        var row = this.parentNode;
+        row.parentNode.removeChild(row);
+        calculator();
+    }
+    tr.appendChild(td);
+    return tr;
+}
+
+function mouseover_suggestion() {
+    var total = suggest.childElementCount;
+    var current = window.stash.suggestion;
+    
+    if (current != -1) {
+        suggest.children[current].className = '';
+    }
+    this.className = 'suggest-active';
+    
+    for (var i = 0; i < total; i++)
+    if (suggest.children[i] == this) {
+        window.stash.suggestion = i;
+        return;
+    }
+}
+
+function navigate_suggestion(to) {
+    var total = suggest.childElementCount;
+    var current = window.stash.suggestion;
+    
+    if (current != -1) {
+        suggest.children[current].className = '';
+    }
+    current = (current + to) % total;
+    if (current < 0) current += total;
+    suggest.children[current].className = 'suggest-active';
+    
+    window.stash.suggestion = current;
+}
+
+function select_suggestion() {
+    var selected = suggest.children[stash.suggestion];
+    var doc = selected.dataset.doc;
+    var node = product_node(doc);
+    
+    // test.textContent = doc; // debug
+    
+    product_list.appendChild(node);
+}
+
+search.oninput = function(event) {
+    if (!search.value) return;
+    var docs = search_index_lev(search.value);
+    var fragment = document.createDocumentFragment();
+    var container = suggest.cloneNode(false);
+    
+    for (var i = 0; i < docs.length; i++) {
+        var item = suggest_node(docs[i]);
+        item.onmouseenter = mouseover_suggestion;
+        item.onclick = select_suggestion;
+        fragment.appendChild(item);
+    }
+    test.textContent = JSON.stringify(docs); // debug
+    
+    container.appendChild(fragment);
+    suggest.parentNode.replaceChild(container, suggest);
+    window.stash.suggestion = -1;
+};
+
+search.oninput();
+
+search.onkeydown = function(event) {
+    if (!suggest.childElementCount) return; // no suggestions no business
+    
+    if (event.key == 'ArrowDown') {
+        event.preventDefault();
+        navigate_suggestion(+1);
+    }
+    if (event.key == 'ArrowUp') {
+        event.preventDefault();
+        navigate_suggestion(-1);
+    }
+};
+
+search.onkeypress = function(event) {
+    if (window.stash.suggestion == -1) return;
+    
+    if (event.key == 'Enter') {
+        select_suggestion();
+    }
+}
+</script>
+</body>
+</html>
