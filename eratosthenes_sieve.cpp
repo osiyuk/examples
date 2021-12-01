@@ -3,6 +3,7 @@
 // корректность работы сравнить по простому отпечатку
 // реализовать оптимизацию по памяти с помощью битовой упаковки
 
+// Задача: убрать дублирование кода
 
 #include <ctime>
 #include <iostream>
@@ -40,6 +41,10 @@ void output_memory(unsigned bytes)
 
 #define IDX(n) ((n - 1) / 2)
 
+#define SIEVE_LOOP(N, TEST, SET) \
+	for (int x = 3;   x < std::sqrt(N); x += 2)   { if (TEST) \
+	for (int y = x*x; y <= N;           y += 2*x)        SET; }
+
 void test_eratosthenes_sieve()
 {
     std::vector<char> prime (N / 2 + 1, true);
@@ -47,10 +52,7 @@ void test_eratosthenes_sieve()
 
     time_t processing = clock();
 
-    for (int i = 3; i <= std::sqrt(N); i += 2)
-        if (prime[IDX(i)])
-            for (int j = i*i; j <= N; j +=  2 * i)
-                prime[IDX(j)] = false;
+	SIEVE_LOOP(N, prime[IDX(x)], prime[IDX(y)] = false)
 
     output_time("std::vector", processing);
     output_memory(prime.size() * sizeof(char));
@@ -101,10 +103,7 @@ void test_eratosthenes_sieve_with_bitset()
 
 	time_t processing = clock();
 
-	for (int x = 3; x <= std::sqrt(N); x += 2)
-		if (prime.get(IDX(x)))
-			for (int y = x*x; y <= N; y += 2*x)
-				prime.set(IDX(y), false);
+	SIEVE_LOOP(N, prime.get(IDX(x)), prime.set(IDX(y), false))
 
 	output_time("Bitset", processing);
 	output_memory(prime.size());
@@ -112,10 +111,11 @@ void test_eratosthenes_sieve_with_bitset()
 	FINGERPRINT(prime.get(i))
 }
 
+#define BENCH_COUNT 1
 
 int main()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < BENCH_COUNT; ++i) {
         test_eratosthenes_sieve();
         test_eratosthenes_sieve_with_bitset();
     }
