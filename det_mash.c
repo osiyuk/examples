@@ -104,19 +104,8 @@ wheel_geom wheel_geometry(double m, double z)
     return wheel;
 }
 
-void print_wheel_geom(wheel_geom wheel)
-{
-    printf("делительный диаметр — %.2f мм\n", wheel.d);
-    printf("диаметр окружности вершин — %.2f мм\n", wheel.da);
-    printf("диаметр окружности впадин — %.2f мм\n\n", wheel.df);
-}
-
-void print_wheel_force(double T, double d, double bw)
-{
-    double force = 2 * T / d, relative = force / bw;
-    printf("окружная сила Ft = %.2f Н\n", force);
-    printf("удельная окружная сила wt = %.2f Н / мм\n\n", relative);
-}
+void print_wheel_geom(struct wheel_geometry_t);
+void print_wheel_force(double T, double d, double bw);
 
 /*
 #define M__T 1716226113.87654
@@ -255,9 +244,22 @@ void steel_gear()
 
 }
 
+void print_wheel_geom(wheel_geom wheel)
+{
+    printf("делительный диаметр — %.2f мм\n", wheel.d);
+    printf("диаметр окружности вершин — %.2f мм\n", wheel.da);
+    printf("диаметр окружности впадин — %.2f мм\n\n", wheel.df);
+}
+
+void print_wheel_force(double T, double d, double bw)
+{
+    double force = 2 * T / d, relative = force / bw;
+    printf("окружная сила Ft = %.2f Н\n", force);
+    printf("удельная окружная сила wt = %.2f Н / мм\n\n", relative);
+}
+
 int main()
 {
     steel_gear();
-
     return 0;
 }
