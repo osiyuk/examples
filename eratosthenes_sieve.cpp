@@ -33,28 +33,30 @@ void output_memory(unsigned bytes)
 #include <vector>
 
 
+// Признак простоты числа хранится в массиве для всех нечетных не больше N
+// Индекс для доступа к массиву для числа n вычисляется так (n - 1) / 2
+// Например числа 1, 3, 5 будут иметь индексы 0, 1, 2
+// Тогда prime[5] содержит признак для числа 11
+
+#define IDX(n) ((n - 1) / 2)
+
 void test_eratosthenes_sieve()
 {
-    std::vector<char> prime ((N + 1) / 2, true);
+    std::vector<char> prime (N / 2 + 1, true);
     prime[0] = false;
 
     time_t processing = clock();
 
     for (int i = 3; i <= std::sqrt(N); i += 2)
-        if (prime[(i - 1) / 2])
+        if (prime[IDX(i)])
             for (int j = i*i; j <= N; j +=  2 * i)
-                prime[(j - 1) / 2] = false;
+                prime[IDX(j)] = false;
 
     output_time("std::vector", processing);
     output_memory(prime.size() * sizeof(char));
 
     FINGERPRINT(prime[i])
 }
-
-// Признак простоты числа хранится в массиве для всех нечетных не больше N
-// Индекс для доступа к массиву для числа n вычисляется так (n - 1) / 2
-// Например числа 1, 3, 5 будут иметь индексы 0, 1, 2
-// Тогда prime[5] содержит признак для числа 11
 
 
 struct Bitset {
@@ -93,21 +95,21 @@ struct Bitset {
 
 void test_eratosthenes_sieve_with_bitset()
 {
-    Bitset prime ((N + 1) / 2);
-    prime._all_ones();
-    prime.set(0, false);
+	Bitset prime (N / 2 + 1);
+	prime._all_ones();
+	prime.set(0, false);
 
-    time_t processing = clock();
+	time_t processing = clock();
 
-    for (int i = 3; i <= std::sqrt(N); i += 2)
-        if (prime.get((i - 1) / 2))
-            for (int j = i*i; j <= N; j +=  2 * i)
-                prime.set((j - 1) / 2, false);
+	for (int x = 3; x <= std::sqrt(N); x += 2)
+		if (prime.get(IDX(x)))
+			for (int y = x*x; y <= N; y += 2*x)
+				prime.set(IDX(y), false);
 
-    output_time("Bitset", processing);
-    output_memory(prime.size());
+	output_time("Bitset", processing);
+	output_memory(prime.size());
 
-    FINGERPRINT(prime.get(i))
+	FINGERPRINT(prime.get(i))
 }
 
 
