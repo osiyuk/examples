@@ -94,17 +94,17 @@ struct wheel_geometry_t {
     double bw;
 };
 
-#define wheel_geom struct wheel_geometry_t
-wheel_geom wheel_geometry(double m, double z)
+struct wheel_geometry_t
+wheel_geometry(double m, double z)
 {
-    wheel_geom wheel;
+    struct wheel_geometry_t wheel;
     wheel.d = m * z;
     wheel.da = m * (z + 2);
     wheel.df = m * (z - 2.5);
     return wheel;
 }
 
-void print_wheel_geom(struct wheel_geometry_t);
+void print_wheel_geometry(struct wheel_geometry_t);
 void print_wheel_force(double T, double d, double bw);
 
 /*
@@ -134,7 +134,7 @@ void steel_gear()
         Hlim_a, Hlim_b, Hlim, Sigma_HP,
         aw, bw, _m, m, d1, d2, d3;
     int z1, z2, z3, N_h0, N_he;
-    wheel_geom input_gear, middle_gear, output_gear;
+    struct wheel_geometry_t input_gear, middle_gear, output_gear;
 
     i_sum = (double) Nin / Nout;
     i_12 = Cmr * root(i_sum, 2);
@@ -220,11 +220,11 @@ void steel_gear()
     printf("Определение основных геометрических размеров\n");
     printf("цилиндрических зубьев разрабатываемого узла редуктора\n");
     printf("для входного колеса (шестерни)\n");
-    print_wheel_geom(input_gear);
+    print_wheel_geometry(input_gear);
     printf("для промежуточного колеса\n");
-    print_wheel_geom(middle_gear);
+    print_wheel_geometry(middle_gear);
     printf("для выходного колеса\n");
-    print_wheel_geom(output_gear);
+    print_wheel_geometry(output_gear);
 
 
     aw = m / 2 * (z1 + z2);
@@ -244,7 +244,7 @@ void steel_gear()
 
 }
 
-void print_wheel_geom(wheel_geom wheel)
+void print_wheel_geometry(struct wheel_geometry_t wheel)
 {
     printf("делительный диаметр — %.2f мм\n", wheel.d);
     printf("диаметр окружности вершин — %.2f мм\n", wheel.da);
