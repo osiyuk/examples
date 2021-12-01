@@ -132,7 +132,7 @@ void steel_gear()
         u_12, u_23, u_sum, acc,
         Tin, T1, T2, T3,
         Hlim_a, Hlim_b, Hlim, Sigma_HP,
-        aw, bw, _m, m, d1, d2, d3, temp;
+        aw, bw, _m, m, d1, d2, d3;
     int z1, z2, z3, N_h0, N_he;
     wheel_geom input_gear, middle_gear, output_gear;
 
