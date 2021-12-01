@@ -3,7 +3,7 @@
 // корректность работы сравнить по простому отпечатку
 // реализовать оптимизацию по памяти с помощью битовой упаковки
 
-// Задача: убрать дублирование кода
+// Задача: убрать дублирование кода, изменить формат вывода
 
 #include <ctime>
 #include <iostream>
@@ -45,19 +45,16 @@ void output_memory(unsigned bytes)
 	for (int x = 3;   x < std::sqrt(N); x += 2)   { if (TEST) \
 	for (int y = x*x; y <= N;           y += 2*x)        SET; }
 
-void test_eratosthenes_sieve()
-{
-    std::vector<char> prime (N / 2 + 1, true);
-    prime[0] = false;
 
-    time_t processing = clock();
+unsigned sieve_with_vector()
+{
+	std::vector<char> prime (N / 2 + 1, true);
+	prime[0] = false;
 
 	SIEVE_LOOP(N, prime[IDX(x)], prime[IDX(y)] = false)
 
-    output_time("std::vector", processing);
-    output_memory(prime.size() * sizeof(char));
-
-    FINGERPRINT(prime[i])
+	FINGERPRINT(prime[i])
+	return prime.capacity(); // memory used (in bytes)
 }
 
 
@@ -95,20 +92,51 @@ struct Bitset {
 
 };
 
-void test_eratosthenes_sieve_with_bitset()
+unsigned sieve_with_bitset()
 {
 	Bitset prime (N / 2 + 1);
 	prime._all_ones();
 	prime.set(0, false);
 
-	time_t processing = clock();
-
 	SIEVE_LOOP(N, prime.get(IDX(x)), prime.set(IDX(y), false))
 
-	output_time("Bitset", processing);
-	output_memory(prime.size());
-
 	FINGERPRINT(prime.get(i))
+	return prime.size();
+}
+
+float clock_diff(time_t clock_time)
+{
+	return (float) (clock() - clock_time) / CLOCKS_PER_SEC;
+}
+
+void proc_usage(const char *variant, float time)
+{
+	std::clog << "Sieve with " << variant << " took " << time << " sec\n";
+}
+
+void memory_usage(unsigned bytes)
+{
+	std::clog << "Memory: " << MB(bytes) << " MB\n";
+}
+
+void bench_eratosthenes_sieve()
+{
+	time_t vector, bitset;
+	float v_time, b_time;
+	unsigned v_mem, b_mem;
+
+	vector = clock();
+	v_mem = sieve_with_vector();
+	v_time = clock_diff(vector);
+
+	bitset = clock();
+	b_mem = sieve_with_bitset();
+	b_time = clock_diff(bitset);
+
+	proc_usage("std::vector", v_time);
+	memory_usage(v_mem);
+	proc_usage("custom bitset", b_time);
+	memory_usage(b_mem);
 }
 
 #define BENCH_COUNT 1
@@ -116,8 +144,7 @@ void test_eratosthenes_sieve_with_bitset()
 int main()
 {
     for (int i = 0; i < BENCH_COUNT; ++i) {
-        test_eratosthenes_sieve();
-        test_eratosthenes_sieve_with_bitset();
+        bench_eratosthenes_sieve();
     }
 
     return 0;
