@@ -3,35 +3,23 @@
 // корректность работы сравнить по простому отпечатку
 // реализовать оптимизацию по памяти с помощью битовой упаковки
 
-// Задача: убрать дублирование кода, изменить формат вывода
+// Задача: убрать дублирование кода, улучшить формат вывода
 
 #include <ctime>
+#include <cmath>
+#include <vector>
 #include <iostream>
 
 const unsigned N = 1 << 31;
 
 #define MB(bytes) (bytes >> 20)
-#define FINGERPRINT_LENGTH 80
-#define FINGERPRINT(getter) std::cout << "Fingerprint:\n"; \
-    for (int i = 0; i < FINGERPRINT_LENGTH; i++) \
-        std::cout << (getter ? 1 : 0); \
-    std::cout << "\n\n";
 
+#define LENGTH 80
+#define OSTREAM std::cout
 
-void output_time(const char *title, time_t start_time)
-{
-    float output = (float)(clock() - start_time) / CLOCKS_PER_SEC;
-    std::cout << title << ": " << output << " sec\n";
-}
-
-void output_memory(unsigned bytes)
-{
-    std::cout << "Memory: " << MB(bytes) << " MB\n";
-}
-
-
-#include <cmath>
-#include <vector>
+#define FINGERPRINT(getter) for (int i = 0; i < LENGTH; i++) { \
+	OSTREAM << (getter ? '1' : '0'); \
+}	OSTREAM << "\n";
 
 
 // Признак простоты числа хранится в массиве для всех нечетных не больше N
@@ -111,19 +99,21 @@ float clock_diff(time_t clock_time)
 
 void proc_usage(const char *variant, float time)
 {
-	std::clog << "Sieve with " << variant << " took " << time << " sec\n";
+	OSTREAM << variant << ": " << time << " sec\n";
 }
 
 void memory_usage(unsigned bytes)
 {
-	std::clog << "Memory: " << MB(bytes) << " MB\n";
+	OSTREAM << "Memory: " << MB(bytes) << " MB\n";
 }
 
-void bench_eratosthenes_sieve()
+void bench_eratosthenes_sieve(unsigned round)
 {
 	time_t vector, bitset;
 	float v_time, b_time;
 	unsigned v_mem, b_mem;
+
+	OSTREAM << "Round " << round << ". Fingerprints:\n";
 
 	vector = clock();
 	v_mem = sieve_with_vector();
@@ -133,21 +123,24 @@ void bench_eratosthenes_sieve()
 	b_mem = sieve_with_bitset();
 	b_time = clock_diff(bitset);
 
+	OSTREAM << "\nResults:\n";
 	proc_usage("std::vector", v_time);
 	memory_usage(v_mem);
 	proc_usage("custom bitset", b_time);
 	memory_usage(b_mem);
+	OSTREAM << "\n";
 }
 
-#define BENCH_COUNT 1
+#define BENCH_COUNT 2
 
 int main()
 {
-    for (int i = 0; i < BENCH_COUNT; ++i) {
-        bench_eratosthenes_sieve();
-    }
+	OSTREAM << "Eratosthenes sieve: std::vector vs. custom bitset\n";
+	for (int i = 0; i < BENCH_COUNT; ++i) {
+		bench_eratosthenes_sieve(i + 1);
+	}
 
-    return 0;
+	return 0;
 }
 
 /*
